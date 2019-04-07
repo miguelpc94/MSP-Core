@@ -13,4 +13,4 @@ Here are the updated agreed rules and preferences:
 * Rule 3: It can't be spent more than 3 consecutive days in the same configuration, which are: sleeping at her parent's house, sleeping at my father's house or sleeping apart;
 * Rule 4: If n consecutive days are spent at the same configuration, then this configuration can't be used for n+1 consecutive days;
 * Preference 1: We'd like to spent the least number of days possible sleeping apart;
-* Preference 2: We'd like to switch between configurations only as much as necessary.
+* Preference 2: We'd like to keep the number of switches between configurations as low as possible.
