@@ -48,7 +48,7 @@ class StaySchedule {
         for (let day=0; day<this.schedule.length; day++) {
             let weekday = day % 7;
             let planned = this.schedule[day];
-            if (planned=='x' && (weekday==FRI || weekday==SAT || weekday==SUN)) {
+            if (planned=='x' && (weekday==SAT || weekday==SUN)) {
                 violations++;
             }
         }
@@ -79,6 +79,70 @@ class StaySchedule {
         return violations;
     }
 
+    // Count the number of violations of the rule 5
+    get violationsOfRule5() {
+
+        /* 
+            The rule5Enforcer contain only enough data and methods to determine if a given 
+            planned day violates the rule 5, considering the days given before it
+        */
+        let rule5Enforcer = {
+            daysOfAvoidance: {},
+            avoiding: {},
+            lastPlanned: '-',
+            isViolation: function(planned) {
+                let violation=new Boolean(false);
+                violation = this.avoiding[planned]===true;
+                this.updateStatus(planned);
+                return violation;
+            },
+            updateStatus: function(planned) {
+                if (!(planned in this.avoiding)) {
+                    this.avoiding[planned]=false;
+                    this.daysOfAvoidance[planned]=2;
+                    if (this.lastPlanned!=='-') {
+                        this.avoiding[this.lastPlanned]=true;
+                    }
+                }
+                else {
+                    if (planned!=this.lastPlanned) {
+                        this.avoiding[this.lastPlanned]=true;
+                    }
+                    if (this.daysOfAvoidance[planned]==0) {
+                        this.daysOfAvoidance[planned]=2;
+                    }
+                    else {
+                        this.daysOfAvoidance[planned]++;
+                    }
+                }
+                this.lastPlanned=planned;
+                this.decayAvoidance();
+            },
+            decayAvoidance: function() {
+                for (let planType in this.avoiding) {
+                    if (this.avoiding[planType]==true) {
+                        if (this.daysOfAvoidance[planType]>0) {
+                            this.daysOfAvoidance[planType]--;
+                        }
+                        if (this.daysOfAvoidance[planType]==0) {
+                            this.avoiding[planType]=false;
+                        }
+                    }
+                }
+            }
+        };
+        let violations = new Number(0);
+
+        for (let day=0; day<this.schedule.length; day++) {
+            if (rule5Enforcer.isViolation(this.schedule[day])) {
+                violations++;
+            }
+        }
+        
+        return violations;
+
+    }
+
     // Return a formated stay schedule
     get prettySchedule() {
         let prettyString=new String();
@@ -92,10 +156,7 @@ class StaySchedule {
             prettyString+='\n';
         }
 
-        // Add ' ' between chars in the string borrowing a method from the Array's prototype
-        prettyString=Array.prototype.map.call(prettyString,char => char+" ").reduce((str,char) => str+=char," ")
-
-        return prettyString;
+        return prettyString.split("").reduce((str,char) => `${str} ${char}`,"");
     }
 }
 
