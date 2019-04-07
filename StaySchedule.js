@@ -138,9 +138,31 @@ class StaySchedule {
                 violations++;
             }
         }
-        
         return violations;
+    }
 
+    // Count the number of violations of the preference 1
+    get violationsOfPreference1() {
+        let count = new Number(0);
+        for (let day=0; day<this.schedule.length; day++) {
+            if (this.schedule[day]==='x') {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // Count the number of violations of the preference 2
+    get violationsOfPreference2() {
+        let count = new Number(0);
+        let lastPlanned=this.schedule[0];
+        for (let day=0; day<this.schedule.length; day++) {
+            if (this.schedule[day]!=lastPlanned) {
+                count++;
+            }
+            lastPlanned=this.schedule[day];
+        }
+        return count;
     }
 
     // Return a formated stay schedule
