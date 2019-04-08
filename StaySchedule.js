@@ -19,6 +19,12 @@ class StaySchedule {
     // The default schedule is a week sleeping apart
     constructor(schedule="xxxxxxx") {
         this.schedule=schedule;
+        this.weightViolationsOfRule2=1.0;
+        this.weightViolationsOfRule3=1.0;
+        this.weightViolationsOfRule4=1.0;
+        this.weightViolationsOfRule5=1.0;
+        this.weightViolationsOfPreference1=0.1;
+        this.weightViolationsOfPreference2=0.1;
     }
 
     // Set a schedule
@@ -158,7 +164,12 @@ class StaySchedule {
         let lastPlanned=this.schedule[0];
         for (let day=0; day<this.schedule.length; day++) {
             if (this.schedule[day]!=lastPlanned) {
-                count++;
+                if(this.schedule[day]=='x' || lastPlanned=='x') {
+                    count++;
+                }
+                else {
+                    count+=2;
+                }
             }
             lastPlanned=this.schedule[day];
         }
@@ -179,6 +190,35 @@ class StaySchedule {
         }
 
         return prettyString.split("").reduce((str,char) => `${str} ${char}`,"");
+    }
+
+    // Set the weights used to calculate the schedule's score
+    set weights([
+        weightViolationsOfRule2,
+        weightViolationsOfRule3,
+        weightViolationsOfRule4,
+        weightViolationsOfRule5,
+        weightViolationsOfPreference1,
+        weightViolationsOfPreference2
+    ]) {
+        this.weightViolationsOfRule2=weightViolationsOfRule2;
+        this.weightViolationsOfRule3=weightViolationsOfRule3;
+        this.weightViolationsOfRule4=weightViolationsOfRule4;
+        this.weightViolationsOfRule5=weightViolationsOfRule5;
+        this.weightViolationsOfPreference1=weightViolationsOfPreference1;
+        this.weightViolationsOfPreference2=weightViolationsOfPreference2;
+    }
+
+    // Calculate the schedule's score. The higher, the worst
+    get score() {
+        let score=new Number(0);
+        score+=this.weightViolationsOfRule2*this.violationsOfRule2;
+        score+=this.weightViolationsOfRule3*this.violationsOfRule3;
+        score+=this.weightViolationsOfRule4*this.violationsOfRule4;
+        score+=this.weightViolationsOfRule5*this.violationsOfRule5;
+        score+=this.weightViolationsOfPreference1*this.violationsOfPreference1;
+        score+=this.weightViolationsOfPreference2*this.violationsOfPreference2;
+        return score;
     }
 }
 
