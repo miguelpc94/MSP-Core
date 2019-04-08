@@ -25,6 +25,7 @@ class StaySchedule {
         this.weightViolationsOfRule5=1.0;
         this.weightViolationsOfPreference1=0.1;
         this.weightViolationsOfPreference2=0.1;
+        this.scoreValue=null;
     }
 
     // Set a schedule
@@ -211,6 +212,9 @@ class StaySchedule {
 
     // Calculate the schedule's score. The higher, the worst
     get score() {
+        if (this.scoreValue) {
+            return this.scoreValue;
+        }
         let score=new Number(0);
         score+=this.weightViolationsOfRule2*this.violationsOfRule2;
         score+=this.weightViolationsOfRule3*this.violationsOfRule3;
