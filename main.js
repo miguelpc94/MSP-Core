@@ -1,18 +1,21 @@
 const StaySchedule = require('./StaySchedule');
 const GASchedulePlanner = require('./GASchedulePlanner');
 
-let chromosomeSize=14;
-let populationSize=10000;
+let chromosomeSize=28;
+let populationSize=50;
 let maxGeneration=100;
-let planner = new GASchedulePlanner(chromosomeSize, populationSize, maxGeneration);
+let eliteSize=5;
+let geneMutationChance=0.01;
+let tournamentSize = 3;
+let planner = new GASchedulePlanner(chromosomeSize, populationSize, maxGeneration, eliteSize, geneMutationChance, tournamentSize);
 
-//planner.model='mpppxmm';
-planner.weights = [0.5, 0.5, 0.5, 0.5, 0.05, 0.05]
-planner.generateFirstPopulation()
+planner.model='mpppxmmm-----pp';
+planner.weights = [2.0, 0.5, 0.5, 0.5, 0.15, 0.25];
+planner.reportedRun(5);
 
-let schedules = planner.findBest(5);
-console.log(planner.population.length);
+let schedules = planner.elite;
 
+console.log('\n****** Printing out the best schedules:\n')
 for (let schedule of schedules) {
     console.log('\n'+schedule.prettySchedule);
     console.log('Violations of rule 2: '+schedule.violationsOfRule2);

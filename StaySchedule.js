@@ -193,6 +193,11 @@ class StaySchedule {
         return prettyString.split("").reduce((str,char) => `${str} ${char}`,"");
     }
 
+    // Return the schedule string
+    get scheduleString() {
+        return this.schedule;
+    }
+
     // Set the weights used to calculate the schedule's score
     set weights([
         weightViolationsOfRule2,
