@@ -41,6 +41,7 @@ class GASchedulePlanner {
     }
 
     // Return the elite chromosomes
+    // NEED TEST ###########################################################
     get elite() {
         return this.findBest(this.eliteSize);
     }
@@ -62,20 +63,28 @@ class GASchedulePlanner {
     }
 
     // Run the GA reporting the progress from time to time
+    // NEED TEST ###########################################################
     reportedRun(interval) {
         this.generateFirstPopulation();
         for (let generation=0;generation<this.maxGeneration; generation++) {
             if ((generation%interval)==0) this.report(generation);
-            let nextPopulation = new Array();
-            let offspringPopulation=new Array();
-            nextPopulation = nextPopulation.concat(this.elite);
-            offspringPopulation = this.generateOffspring(this.populationSize-this.eliteSize);
-            nextPopulation = nextPopulation.concat(offspringPopulation);
-            this.population = nextPopulation;
+            this.cycle();
         }
     }
 
+    // Perform the complete GA cycle, generating the new population from the elite and offspring
+    // NEED TEST ###########################################################
+    cycle() {
+        let nextPopulation = new Array();
+        let offspringPopulation=new Array();
+        nextPopulation = nextPopulation.concat(this.elite);
+        offspringPopulation = this.generateOffspring(this.populationSize-this.eliteSize);
+        nextPopulation = nextPopulation.concat(offspringPopulation);
+        this.population = nextPopulation;
+    }
+
     // Select the parents from the population, generate their offspring and mutate them
+    // NEED TEST ###########################################################
     generateOffspring(offspringSize) {
         let offspring=new Array();
         let parents=this.tournamentSelection(offspringSize*2);
@@ -86,27 +95,115 @@ class GASchedulePlanner {
         return offspring;
     }
     
-    // UNDER WRITING
+    // Use tournament selection between a number of chromosome determined by the GA
+    // NEED TEST ###########################################################
     tornamentSelection(selectionSize) {
-        return this.population;
+        let winnerPopulation=new Array();
+        for (let chromosome=0; chromosome<selectionSize; chromosome++) {
+            let competitors=this.randomGetChromosomes(this.tournamentSize);
+            winnerPopulation.push(this.findBestFrom(competitors,1));
+        }
+        return winnerPopulation;
     }
 
-    // UNDER WRITING
-    scheduleStringCrossover(scheduleStrings=new Array()) {
-        return scheduleStrings;
+    // Get a number of chromosomes at random indexes from the actual population
+    // NEED TEST ###########################################################
+    randomGetChromosomes(numberOfChromosomes) {
+        let randomChromosomes=new Array();
+        for (let chromosome=0; chromosome<numberOfChromosomes; chromosome++) {
+            let randomIndex = Math.floor(Math.random*this.populationSize);
+            randomChromosomes.push(this.population[randomIndex]);
+        }
+        return randomChromosomes;
     }
 
+    // Perform a k-point crossover between each pair of schedule strings
+    // The crossover points segments the schedule in weeks
+    // NEED TEST ###########################################################
+    scheduleStringCrossover(scheduleStrings) {
+        let crossoveredStrings = new Array();
+        let scheduleStringsParents1 = scheduleStrings.slice(0,Math.floor(scheduleStrings.length/2));
+        let scheduleStringsParents2 = scheduleStrings.slice(Math.floor(scheduleStrings.length/2),scheduleStrings.length);
+        for (let parent=0; parent<scheduleStringsParents1.length; parent++) {
+            let parent1=scheduleStringsParents1[parent];
+            let parent2=scheduleStringsParents1[parent];
+            crossoveredStrings.push(this.weekCrossover(parent1, parent2));
+        }
+        return crossoveredStrings;
+    }
+
+    // Perform a k-point crossover between two shcedule strings, where the 
+    // crossover points segment the schedules in weeks
     // UNDER WRITING
-    mutateScheduleStrings(scheduleStrings=new Array()) {
-        return scheduleStrings;
+    weekCrossover(scheduleString1, scheduleString2) {
+        let numberOfSegments=scheduleString1.length/7;
+        let crossoveredString = new String();
+        for (let segment=0; segment<numberOfSegments; segment++) {
+            if (Math.random>=0.5) {
+                crossoveredString+=scheduleString1.substr(segment*7,7);
+            }
+            else {
+                crossoveredString+=scheduleString2.substr(segment*7,7);
+            }
+        }
+        return crossoveredString;
+    }
+
+    // Mutate the schedule strings delivered, respecting the model if there is any
+    // NEED TEST ###########################################################
+    mutateScheduleStrings(scheduleStrings) {
+        let mutatedScheduleStrings=new Array()
+        if (this.haveModel) {
+            for (let scheduleString of scheduleStrings) {
+                mutatedScheduleStrings.push(this.mutateScheduleStringWithModel(scheduleString));
+            }
+        }
+        else {
+            for (let scheduleString of scheduleStrings) {
+                mutatedScheduleStrings.push(this.mutateScheduleString(scheduleString));
+            }
+        }
+        return mutatedScheduleStrings;
+    }
+
+    // Mutate a single shcedule string ignoring the model
+    // NEED TEST ###########################################################
+    mutateScheduleString(scheduleString) {
+        let mutatedScheduleString = new String();
+        for (let gene=0; gene<this.chromosomeSize; gene++) {
+            if (Math.random<=this.geneMutationChance) {
+                mutatedScheduleString+=generateRandomGene();
+            }
+            else {
+                mutatedScheduleString+=scheduleString[gene]
+            }
+        }
+        return mutatedScheduleString;
+    }
+
+    // Mutate a single shcedule string considering the model
+    // NEED TEST ###########################################################
+    mutateScheduleStringWithModel(scheduleString) {
+        let mutatedScheduleString = new String();
+        for (let gene=0; gene<this.chromosomeSize; gene++) {
+            if (this.model[gene]!=='m' && this.model[gene]!=='p' && Math.random<=this.geneMutationChance) {
+                mutatedScheduleString+=generateRandomGene();
+            }
+            else {
+                mutatedScheduleString+=scheduleString[gene]
+            }
+        }
+        return mutatedScheduleString;
     }
 
     // Return an array with only the schedule strings from the StaySchedule instances
+    // NEED TEST ###########################################################
     extractScheduleStringsFrom(analyzedPopulation) {
         return analyzedPopulation.map(schedule => schedule.scheduleString);
     }
 
     // Generate a population from schedule strings
+    // NEED TEST ###########################################################
     generatePopulationFromStrings(scheduleStrings) {
         let generatedPopulation=new Array();
         for (let scheduleString of scheduleStrings) {
@@ -176,17 +273,22 @@ class GASchedulePlanner {
     }
 
     findBestFrom(analyzedPopulation,numberOfSchedules) {
-        if (numberOfSchedules>=analyzedPopulation) {
+        if (numberOfSchedules>=analyzedPopulation.length) {
             return analyzedPopulation;
         }
         let best = analyzedPopulation.sort((a,b) => a.score - b.score).slice(0,numberOfSchedules);
         return best;
     }
 
+    // NEED TEST ###########################################################
     report(generation) {
         let bestScore=this.elite[0].score;
         let averageScore=this.population.reduce((total,schedule) => total+=schedule.score)/this.populationSize;
         console.log(`G: ${generation} Best: ${bestScore} Average: ${averageScore}`);
+    }
+
+    test() {
+        return;
     }
 }
 
